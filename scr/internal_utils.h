@@ -58,7 +58,7 @@ int read_line(puCharArray buff, size_t *bytes_read, FILE *f)
         append(unsigned char, *buff, c);
         ++i;
     }
-    buff->array[i] = '\0';
+    append(unsigned char, *buff, '\0');
     *bytes_read = i;
     return c;
 }
