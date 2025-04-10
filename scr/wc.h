@@ -10,7 +10,7 @@ int wc_main(int argc, char **argv);
 static void wc_on_file(char *f, size_t *total_lines, size_t *total_words, size_t *total_bytes, pArglist arg_list);
 static void wc_implementation(pArglist arg_list);
 
-#define WC_HEADER_IMPLEMENTATION
+//#define WC_HEADER_IMPLEMENTATION
 #ifdef WC_HEADER_IMPLEMENTATION
 
 int wc_main(int argc, char **argv)
@@ -18,14 +18,13 @@ int wc_main(int argc, char **argv)
     Arglist arg_list = {.footer_msg = "Print newline, word, and byte counts for each FILE, and a total line if "
                                       "more than one FILE is specified.\nA word is a nonempty sequence of non white"
                                       "space delimited by white space characters or by start or end of input.\n"
-                                      "Usage: wc [OPTION(s)] [FILE]\nWith no FILE, or when FILE is -, read standard input.",
-                        .epilog = "Default delimeter is \\t"};
+                                      "Usage: wc [OPTION(s)] [FILE]\nWith no FILE, or when FILE is -, read standard input."};
 
     push_argument(&arg_list, (Argument){.key = "-h", .flag = IS_FLAG, .help_msg = "Prints this help message."});
     push_argument(&arg_list, (Argument){.key = "-l", .flag = IS_FLAG, .help_msg = "Include lines number to output."});
     push_argument(&arg_list, (Argument){.key = "-w", .flag = IS_FLAG, .help_msg = "Include words number to output."});
     push_argument(&arg_list, (Argument){.key = "-b", .flag = IS_FLAG, .help_msg = "Include bytes number to output."});
-    push_argument(&arg_list, (Argument){.key = "-d", .flag = DEFAULT_VALUE, .help_msg = "Delimiter for output.", .value = "\t"});
+    push_argument(&arg_list, (Argument){.key = "-d", .flag = DEFAULT_VALUE, .help_msg = "Delimiter for output.", .value = "\t\t"});
     push_argument(&arg_list, (Argument){.key = "-", .flag = IS_FLAG, .help_msg = "Use to read from stdin on some point."});
     parse_arguments(argc, argv, &arg_list);
 
@@ -67,7 +66,7 @@ static void wc_on_file(char *f, size_t *total_lines, size_t *total_words, size_t
 
         tmp = line.array;
         in_word = 0;
-        while (*tmp != '\0' && *(tmp + 1) != '\0')
+        while (*tmp != '\0')
         {
             if (isspace(*tmp))
             {
@@ -85,6 +84,7 @@ static void wc_on_file(char *f, size_t *total_lines, size_t *total_words, size_t
         file_words += line_words;
         line_words = line_bytes = 0;
     }
+    free_array(line);
     *total_lines += file_lines;
     *total_bytes += file_bytes;
     *total_words += file_words;
