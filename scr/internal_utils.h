@@ -23,10 +23,13 @@ int read_line_to_buff(unsigned char *buff, size_t buff_max_size, size_t *bytes_r
 int read_line(puCharArray buff, size_t *bytes_read, FILE *f);
 
 // Prints error message to stderr, finish program with 11 status code
-void report_error_and_exit(char error_msg[]);
+#define report_error_and_exit(format, error_msg...)   \
+    fprintf(stderr, "%s", "Error: ");                  \
+    fprintf(stderr, format __VA_OPT__(, ) error_msg); \
+    exit(11)
 
-// #define INTERNAL_UTILS_IMPLEMENTAION
-#ifdef INTERNAL_UTILS_IMPLEMENTAION
+// #define INTERNAL_UTILS_IMPLEMENTATION
+#ifdef INTERNAL_UTILS_IMPLEMENTATION
 
 int read_line_to_buff(unsigned char *buff, size_t buff_max_size, size_t *bytes_read, FILE *f)
 {
@@ -38,8 +41,7 @@ int read_line_to_buff(unsigned char *buff, size_t buff_max_size, size_t *bytes_r
         buff[i++] = c;
     if (i == buff_max_size)
     {
-        printf("Degug - %zu\n", i);
-        report_error_and_exit("provided buffer size is too small to handle input line.");
+        report_error_and_exit("%s", "provided buffer size is too small to handle input line.");
     }
     buff[i] = '\0';
     *bytes_read = i;
@@ -59,16 +61,11 @@ int read_line(puCharArray buff, size_t *bytes_read, FILE *f)
         ++i;
     }
     append(unsigned char, *buff, '\0');
+    append(unsigned char, *buff, '\0');
     *bytes_read = i;
     return c;
 }
 
-void report_error_and_exit(char error_msg[])
-{
-    fprintf(stderr, "CRITICAL ERROR: %s\n", error_msg);
-    exit(11);
-}
-
-#endif // INTERNAL_UTILS_IMPLEMENTAION
+#endif // INTERNAL_UTILS_IMPLEMENTATION
 
 #endif // INTERNAL_UTILS

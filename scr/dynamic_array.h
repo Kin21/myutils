@@ -1,6 +1,9 @@
 #include "stdlib.h"
 #include "stdio.h"
 
+#ifndef DYNAMIC_ARRAY_HEADER
+#define DYNAMIC_ARRAY_HEADER
+
 // Number of elements added to array capacity if realloc needed
 #define ARRAY_SCALING_SIZE 256 
 
@@ -23,3 +26,5 @@
             printf((el_formatter), (a).array[i]); \
         }                                         \
     }
+
+#endif // DYNAMIC_ARRAY_HEADER
