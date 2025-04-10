@@ -20,6 +20,7 @@ struct
     char key[MAX_ARG_KEY_SIZE];
     unsigned char flag;
     char value[MAX_ARG_VALUE_SIZE];
+    char *help_msg;
     size_t id;
 } typedef Argument, *pArgument;
 
@@ -28,6 +29,8 @@ struct
     size_t count;
     size_t capacity;
     pArgument array;
+    char *footer_msg;
+    char *epilog;
 } typedef Arglist, *pArglist;
 
 // Flag shows if value should be present, or if argument is optional/flag
@@ -37,6 +40,8 @@ void print_arguments_switch_skeleton(pArglist arg_list);
 int parse_arguments(int argc, char **argv, pArglist arg_list);
 unsigned char is_flag_set(pArglist arg_list, char *key);
 unsigned char is_value_set(pArglist arg_list, char *key);
+// Prints help for parsed arguments
+void print_default_help(pArglist arg_list);
 
 // Return index of found argument by it's key or KEY_NOT_FOUND if not found
 static int index_argument_by_key(pArglist arg_list, char key[]);
@@ -45,21 +50,37 @@ static int check_if_all_args_set(pArglist arg_list);
 // Hash on key
 static size_t create_id_from_key(char *key);
 
-#define ARGPARSE_HEADER_IMPLEMENTATION
 #ifdef ARGPARSE_HEADER_IMPLEMENTATION
+
+void print_default_help(pArglist arg_list)
+{
+    if (arg_list->footer_msg)
+        printf("%s\n", arg_list->footer_msg);
+
+    for (size_t i = 0; i < arg_list->count; ++i)
+    {
+        printf("\t%s\t%-*s\n", arg_list->array[i].key,
+            MAX_ARG_KEY_SIZE, arg_list->array[i].help_msg ? arg_list->array[i].help_msg : arg_list->array[i].key);
+        if (arg_list->array[i].flag & DEFAULT_VALUE)
+            printf("%*s %s\n", MAX_ARG_KEY_SIZE, "DEFAULT:", arg_list->array[i].value);
+    }
+
+    if (arg_list->epilog)
+        printf("\n%s\n", arg_list->epilog);
+}
 
 unsigned char is_flag_set(pArglist arg_list, char *key)
 {
     int i;
     i = index_argument_by_key(arg_list, key);
-    return i == KEY_NOT_FOUND ? 0: (arg_list->array[i].flag & FLAG_SET); 
+    return i == KEY_NOT_FOUND ? 0 : (arg_list->array[i].flag & FLAG_SET);
 }
 
 unsigned char is_value_set(pArglist arg_list, char *key)
 {
     int i;
     i = index_argument_by_key(arg_list, key);
-    return i == KEY_NOT_FOUND ? 0: (arg_list->array[i].flag & VALUE_SET);
+    return i == KEY_NOT_FOUND ? 0 : (arg_list->array[i].flag & VALUE_SET);
 }
 
 static int check_if_all_args_set(pArglist arg_list)
@@ -90,7 +111,7 @@ int parse_arguments(int argc, char **argv, pArglist arg_list)
             arg_list->array[arg_i].flag |= FLAG_SET;
         else
         {
-            if (i + 1 >= argc || index_argument_by_key(arg_list, argv[i+1]) != KEY_NOT_FOUND)
+            if (i + 1 >= argc || index_argument_by_key(arg_list, argv[i + 1]) != KEY_NOT_FOUND)
                 goto value_not_provided;
             i++;
             if (strlen(argv[i]) >= MAX_ARG_VALUE_SIZE)

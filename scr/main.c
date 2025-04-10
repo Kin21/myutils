@@ -11,17 +11,14 @@ int main(int argc, char **argv)
 {
     Arglist arg_list = {0};
 
-    push_argument(&arg_list, (Argument){.key = "-k", .flag = IS_FLAG});
+    push_argument(&arg_list, (Argument){.key = "-k", .flag = IS_FLAG, .help_msg="Test k flag."});
     push_argument(&arg_list, (Argument){.key = "-f", .value = "/etc/passwd", .flag = DEFAULT_VALUE});
     push_argument(&arg_list, (Argument){.key = "-h", .flag = IS_FLAG});
 
     parse_arguments(argc, argv, &arg_list);
-    for (size_t i = 0; i < arg_list.count; ++i)
-    {
-        printf("Key: %s, Value: %s, FLAG_SET: %u, VALUE_SET: %u\n", arg_list.array[i].key, arg_list.array[i].value,
-               is_flag_set(&arg_list, arg_list.array[i].key),
-               is_value_set(&arg_list, arg_list.array[i].key));
-    }
-
+    
+    if (is_flag_set(&arg_list, "-h"))
+        print_default_help(&arg_list);
+    free_array(arg_list);
     return 0;
 }

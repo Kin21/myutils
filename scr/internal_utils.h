@@ -24,7 +24,7 @@ int read_line(puCharArray buff, size_t *bytes_read, FILE *f);
 
 // Prints error message to stderr, finish program with 11 status code
 #define report_error_and_exit(format, error_msg...)   \
-    fprintf(stderr, "%s", "Error: ");                  \
+    fprintf(stderr, "%s", "Error: ");                 \
     fprintf(stderr, format __VA_OPT__(, ) error_msg); \
     exit(11)
 

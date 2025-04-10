@@ -7,6 +7,8 @@
 // Number of elements added to array capacity if realloc needed
 #define ARRAY_SCALING_SIZE 256 
 
+#define free_array(a) free((a).array)
+
 #define append(type, a, el)                                                                                  \
     if ((a).count == (a).capacity)                                                                           \
     {                                                                                                        \
