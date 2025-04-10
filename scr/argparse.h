@@ -40,6 +40,7 @@ void print_arguments_switch_skeleton(pArglist arg_list);
 int parse_arguments(int argc, char **argv, pArglist arg_list);
 unsigned char is_flag_set(pArglist arg_list, char *key);
 unsigned char is_value_set(pArglist arg_list, char *key);
+char* get_value_by_key(pArglist arg_list, char *key);
 // Prints help for parsed arguments
 void print_default_help(pArglist arg_list);
 
@@ -51,6 +52,13 @@ static int check_if_all_args_set(pArglist arg_list);
 static size_t create_id_from_key(char *key);
 
 #ifdef ARGPARSE_HEADER_IMPLEMENTATION
+
+char* get_value_by_key(pArglist arg_list, char *key)
+{
+    int i;
+    i = index_argument_by_key(arg_list, key);
+    return i == -1 ? NULL: arg_list->array[i].value;
+}
 
 void print_default_help(pArglist arg_list)
 {
@@ -106,18 +114,19 @@ int parse_arguments(int argc, char **argv, pArglist arg_list)
             arg_i = index_argument_by_key(arg_list, argv[i]);
             if (arg_i == KEY_NOT_FOUND)
                 goto argument_not_found;
-        }
-        if (arg_list->array[arg_i].flag & IS_FLAG)
-            arg_list->array[arg_i].flag |= FLAG_SET;
-        else
-        {
-            if (i + 1 >= argc || index_argument_by_key(arg_list, argv[i + 1]) != KEY_NOT_FOUND)
-                goto value_not_provided;
-            i++;
-            if (strlen(argv[i]) >= MAX_ARG_VALUE_SIZE)
-                goto value_length_to_big;
-            strcpy(arg_list->array[arg_i].value, argv[i]);
-            arg_list->array[arg_i].flag |= VALUE_SET;
+        
+            if (arg_list->array[arg_i].flag & IS_FLAG)
+                arg_list->array[arg_i].flag |= FLAG_SET;
+            else
+            {
+                if (i + 1 >= argc || index_argument_by_key(arg_list, argv[i + 1]) != KEY_NOT_FOUND)
+                    goto value_not_provided;
+                i++;
+                if (strlen(argv[i]) >= MAX_ARG_VALUE_SIZE)
+                    goto value_length_to_big;
+                strcpy(arg_list->array[arg_i].value, argv[i]);
+                arg_list->array[arg_i].flag |= VALUE_SET;
+            }
         }
     }
     return check_if_all_args_set(arg_list);

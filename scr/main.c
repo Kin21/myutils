@@ -16,9 +16,10 @@ int main(int argc, char **argv)
     push_argument(&arg_list, (Argument){.key = "-h", .flag = IS_FLAG});
 
     parse_arguments(argc, argv, &arg_list);
-    
+
     if (is_flag_set(&arg_list, "-h"))
         print_default_help(&arg_list);
+    printf("%s", arg_list.array[index_argument_by_key(&arg_list,"-f")].value);
     free_array(arg_list);
     return 0;
 }
