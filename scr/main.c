@@ -1,25 +1,42 @@
-#include <stdio.h>
-#include "dynamic_array.h"
-
+#include "string.h"
 #define INTERNAL_UTILS_IMPLEMENTATION
-#include "internal_utils.h"
-
 #define ARGPARSE_HEADER_IMPLEMENTATION
-#include "argparse.h"
+#define WC_HEADER_IMPLEMENTATION
+#include "wc.h"
+
+// Check if str2 is at the end of str1, return 0 if true
+int backward_substr(char *str1, char *str2)
+{
+    char *s1_start, *s2_start;
+    s1_start = str1;
+    s2_start = str2;
+    while (*str1 != '\0')
+        str1++;
+    while (*str2 != '\0')
+        str2++;
+    while (str1 != s1_start && str2 != s2_start)
+    {
+        if (*str1 != *str2)
+            return *str1 > *str2 ? 1: -1;
+        str1--;
+        str2--;
+    }
+    if (str2 == s2_start)
+        return 0;
+    return 1;
+}
 
 int main(int argc, char **argv)
 {
-    Arglist arg_list = {0};
-
-    push_argument(&arg_list, (Argument){.key = "-k", .flag = IS_FLAG, .help_msg="Test k flag."});
-    push_argument(&arg_list, (Argument){.key = "-f", .value = "/etc/passwd", .flag = DEFAULT_VALUE});
-    push_argument(&arg_list, (Argument){.key = "-h", .flag = IS_FLAG});
-
-    parse_arguments(argc, argv, &arg_list);
-
-    if (is_flag_set(&arg_list, "-h"))
-        print_default_help(&arg_list);
-    printf("%s", arg_list.array[index_argument_by_key(&arg_list,"-f")].value);
-    free_array(arg_list);
+    char *supported_programs[] = {"wc"};
+    if (!backward_substr(argv[0], "wc"))
+        wc_main(argc, argv);
+    else
+        {
+            printf("Program name '%s' not recognized\n", argv[0]);
+            printf("Create link to main with name of suported program:\n");
+            for (size_t i = 0; i < sizeof(supported_programs) / sizeof(char*); ++i)
+                printf("\t%s\n", supported_programs[i]);
+        }
     return 0;
 }

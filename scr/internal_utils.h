@@ -23,9 +23,9 @@ int read_line_to_buff(unsigned char *buff, size_t buff_max_size, size_t *bytes_r
 int read_line(puCharArray buff, size_t *bytes_read, FILE *f);
 
 // Prints error message to stderr, finish program with 11 status code
-#define report_error_and_exit(format, error_msg...)   \
-    fprintf(stderr, "%s", "Error: ");                 \
-    fprintf(stderr, format __VA_OPT__(, ) error_msg); \
+#define report_error_and_exit(format, error_msg...) \
+    fprintf(stderr, "%s", "Error: ");               \
+    fprintf(stderr, format, ##error_msg);           \
     exit(11)
 
 // #define INTERNAL_UTILS_IMPLEMENTATION

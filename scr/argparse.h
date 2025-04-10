@@ -14,6 +14,7 @@
 #define VALUE_SET 8
 #define DEFAULT_VALUE VALUE_SET
 #define KEY_NOT_FOUND -1
+#define POSITIONAL_ARGUMENT_KEY '\0'
 
 struct
 {
@@ -40,9 +41,12 @@ void print_arguments_switch_skeleton(pArglist arg_list);
 int parse_arguments(int argc, char **argv, pArglist arg_list);
 unsigned char is_flag_set(pArglist arg_list, char *key);
 unsigned char is_value_set(pArglist arg_list, char *key);
-char* get_value_by_key(pArglist arg_list, char *key);
+char *get_value_by_key(pArglist arg_list, char *key);
 // Prints help for parsed arguments
 void print_default_help(pArglist arg_list);
+// Initial index expected to be 0, updates index for next search run
+// Return NULL when finished
+char *get_next_positional_value(pArglist arg_list, size_t *index);
 
 // Return index of found argument by it's key or KEY_NOT_FOUND if not found
 static int index_argument_by_key(pArglist arg_list, char key[]);
@@ -53,11 +57,11 @@ static size_t create_id_from_key(char *key);
 
 #ifdef ARGPARSE_HEADER_IMPLEMENTATION
 
-char* get_value_by_key(pArglist arg_list, char *key)
+char *get_value_by_key(pArglist arg_list, char *key)
 {
     int i;
     i = index_argument_by_key(arg_list, key);
-    return i == -1 ? NULL: arg_list->array[i].value;
+    return i == -1 ? NULL : arg_list->array[i].value;
 }
 
 void print_default_help(pArglist arg_list)
@@ -67,10 +71,13 @@ void print_default_help(pArglist arg_list)
 
     for (size_t i = 0; i < arg_list->count; ++i)
     {
-        printf("\t%s\t%-*s\n", arg_list->array[i].key,
-            MAX_ARG_KEY_SIZE, arg_list->array[i].help_msg ? arg_list->array[i].help_msg : arg_list->array[i].key);
-        if (arg_list->array[i].flag & DEFAULT_VALUE)
-            printf("%*s %s\n", MAX_ARG_KEY_SIZE, "DEFAULT:", arg_list->array[i].value);
+        if (*arg_list->array[i].key)
+        {
+            printf("\t%s\t%-*s\n", arg_list->array[i].key,
+                   MAX_ARG_KEY_SIZE, arg_list->array[i].help_msg ? arg_list->array[i].help_msg : arg_list->array[i].key);
+            if (arg_list->array[i].flag & DEFAULT_VALUE)
+                printf("%*s %s\n", MAX_ARG_KEY_SIZE, "DEFAULT:", arg_list->array[i].value);
+        }
     }
 
     if (arg_list->epilog)
@@ -103,6 +110,19 @@ static int check_if_all_args_set(pArglist arg_list)
     return 0;
 }
 
+char *get_next_positional_value(pArglist arg_list, size_t *index)
+{
+    for (; *index < arg_list->count; (*index)++)
+    {
+        if (*arg_list->array[*index].key == POSITIONAL_ARGUMENT_KEY)
+        {
+            *index += 1;
+            return arg_list->array[*index - 1].value;
+        }
+    }
+    return NULL;
+}
+
 int parse_arguments(int argc, char **argv, pArglist arg_list)
 {
     int i, arg_i;
@@ -114,7 +134,7 @@ int parse_arguments(int argc, char **argv, pArglist arg_list)
             arg_i = index_argument_by_key(arg_list, argv[i]);
             if (arg_i == KEY_NOT_FOUND)
                 goto argument_not_found;
-        
+
             if (arg_list->array[arg_i].flag & IS_FLAG)
                 arg_list->array[arg_i].flag |= FLAG_SET;
             else
@@ -127,6 +147,15 @@ int parse_arguments(int argc, char **argv, pArglist arg_list)
                 strcpy(arg_list->array[arg_i].value, argv[i]);
                 arg_list->array[arg_i].flag |= VALUE_SET;
             }
+        }
+        else
+        {
+            if (strlen(argv[i]) >= MAX_ARG_VALUE_SIZE)
+                goto value_length_to_big;
+            Argument tmp_arg = {0};
+            strcpy(tmp_arg.value, argv[i]);
+            tmp_arg.flag |= VALUE_SET;
+            push_argument(arg_list, tmp_arg);
         }
     }
     return check_if_all_args_set(arg_list);
