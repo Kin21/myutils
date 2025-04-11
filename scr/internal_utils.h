@@ -15,6 +15,7 @@ struct
 // Reads line to the buffer, returns '\n' or EOF when finished.
 // Drops \n in read line, and null terminates it.
 // If size of the buffer is too small to handle the line, exits using 'report_error_and_exit' function.
+// bytes_read is number of characters read without \n and \0
 int read_line_to_buff(unsigned char *buff, size_t buff_max_size, size_t *bytes_read, FILE *f);
 
 // Reads line to the buffer, returns '\n' or EOF when finished.

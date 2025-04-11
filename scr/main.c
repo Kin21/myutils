@@ -3,7 +3,8 @@
 #define ARGPARSE_HEADER_IMPLEMENTATION
 #define WC_HEADER_IMPLEMENTATION
 #include "wc.h"
-
+#define TEE_HEADER_IMPLEMENTATION
+#include "tee.h"
 // Check if str2 is at the end of str1, return 0 if true
 int backward_substr(char *str1, char *str2)
 {
@@ -31,6 +32,8 @@ int main(int argc, char **argv)
     char *supported_programs[] = {"wc"};
     if (!backward_substr(argv[0], "wc"))
         wc_main(argc, argv);
+    else if (!backward_substr(argv[0], "tee"))
+        tee_main(argc, argv);
     else
         {
             printf("Program name '%s' not recognized\n", argv[0]);

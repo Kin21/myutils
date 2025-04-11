@@ -1,7 +1,11 @@
-all: main test wc
+all: main test wc tee
+
+tee: main
+	rm -f build/tee
+	ln -s main build/tee
 
 wc: main
-	rm build/wc
+	rm -f build/wc
 	ln -s main build/wc
 
 main:
