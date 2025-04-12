@@ -1,5 +1,8 @@
 all: main test wc tee
 
+windows:
+	x86_64-w64-mingw32-gcc -Wall scr/main.c -o build/main.exe
+
 tee: main
 	rm -f build/tee
 	ln -s main build/tee

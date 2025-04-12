@@ -38,8 +38,11 @@ struct
 void push_argument(pArglist arg_list, Argument arg);
 // Print switch block for arguments
 void print_arguments_switch_skeleton(pArglist arg_list);
+// Sets value for all pushed arguments and checks of all mandatory arguments are set
 int parse_arguments(int argc, char **argv, pArglist arg_list);
+// Returns True if specfied key was set on command line
 unsigned char is_flag_set(pArglist arg_list, char *key);
+// Returns True if valued for specfied key was set on command line
 unsigned char is_value_set(pArglist arg_list, char *key);
 char *get_value_by_key(pArglist arg_list, char *key);
 // Prints help for parsed arguments
@@ -47,6 +50,10 @@ void print_default_help(pArglist arg_list);
 // Initial index expected to be 0, updates index for next search run
 // Return NULL when finished
 char *get_next_positional_value(pArglist arg_list, size_t *index);
+// Retrieves the positional argument at the given index, ignoring all flag arguments.
+// Example: get_positional_argument(["-o", "/tmp/test.txt", "pos_1", "-v", "pos_2"], 0) -> "pos_1"
+// In this case, only "pos_1" and "pos_2" are positional arguments.
+char *get_positional_argument(pArglist arg_list, size_t index);
 
 // Return index of found argument by it's key or KEY_NOT_FOUND if not found
 static int index_argument_by_key(pArglist arg_list, char key[]);
@@ -56,6 +63,24 @@ static int check_if_all_args_set(pArglist arg_list);
 static size_t create_id_from_key(char *key);
 
 #ifdef ARGPARSE_HEADER_IMPLEMENTATION
+
+char *get_positional_argument(pArglist arg_list, size_t index)
+{
+    size_t i, k = 0;
+    char *arg;
+    while ((arg = get_next_positional_value(arg_list, &i)) != NULL)
+    {
+        if (k > index)
+        {
+            warning("provided index is exceeds numer of positional arguments.");
+            return NULL;
+        }
+        else if (k == index)
+            return arg;
+        ++k;
+    }
+    return NULL;
+}
 
 char *get_value_by_key(pArglist arg_list, char *key)
 {
@@ -101,12 +126,8 @@ unsigned char is_value_set(pArglist arg_list, char *key)
 static int check_if_all_args_set(pArglist arg_list)
 {
     for (size_t i = 0; i < arg_list->count; ++i)
-    {
         if (!(arg_list->array[i].flag & ARG_OPTIONAL) && !(arg_list->array[i].flag & VALUE_SET))
-        {
             report_error_and_exit("mandatory argument not set '%s'", arg_list->array[i].key);
-        }
-    }
     return 0;
 }
 

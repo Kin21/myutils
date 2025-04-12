@@ -18,7 +18,7 @@ int backward_substr(char *str1, char *str2)
     while (str1 != s1_start && str2 != s2_start)
     {
         if (*str1 != *str2)
-            return *str1 > *str2 ? 1: -1;
+            return *str1 > *str2 ? 1 : -1;
         str1--;
         str2--;
     }
@@ -29,17 +29,18 @@ int backward_substr(char *str1, char *str2)
 
 int main(int argc, char **argv)
 {
-    char *supported_programs[] = {"wc"};
+    char *supported_programs[] = {"wc",
+                                  "tee"};
     if (!backward_substr(argv[0], "wc"))
         wc_main(argc, argv);
     else if (!backward_substr(argv[0], "tee"))
         tee_main(argc, argv);
     else
-        {
-            printf("Program name '%s' not recognized\n", argv[0]);
-            printf("Create link to main with name of suported program:\n");
-            for (size_t i = 0; i < sizeof(supported_programs) / sizeof(char*); ++i)
-                printf("\t%s\n", supported_programs[i]);
-        }
+    {
+        printf("Program name '%s' not recognized\n", argv[0]);
+        printf("Create link to main with name of suported program:\n");
+        for (size_t i = 0; i < sizeof(supported_programs) / sizeof(char *); ++i)
+            printf("\t%s\n", supported_programs[i]);
+    }
     return 0;
 }

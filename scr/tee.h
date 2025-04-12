@@ -50,22 +50,20 @@ static int tee_implementation(pArglist arg_list)
         hFile = fopen(f, is_flag_set(arg_list, "-a") ? "a" : "w");
         if (!hFile)
         {
-            fprintf(stderr, "Warning: cannot open file %s\n", f);
+            warning("cannot open file: %s\n", f);
             continue;
         }
-        append(FILE*, files, hFile);
+        append(FILE *, files, hFile);
     }
-    append(FILE*, files, stdout);
+    append(FILE *, files, stdout);
 
     while (read_line(&line, &bytes_read, stdin) != EOF)
     {
         for (size_t i = 0; i < files.count; ++i)
         {
             bytes_wrote = fwrite(line.array, sizeof(unsigned char), line.count, files.array[i]);
-            if (bytes_wrote != (bytes_read + 2)) // +2 as read_line drops \n and do not count \0 
-            {
-                report_error_and_exit("W:%zu R:%zu cannot write to specified file\n", bytes_wrote, bytes_read);
-            }
+            if (bytes_wrote != (bytes_read + 2)) // +2 as read_line drops \n and do not count \0
+                report_error_and_exit("cannot write to specified file: %s\n", get_positional_argument(arg_list, i));
             putc('\n', files.array[i]);
         }
     }
